@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Dashboard</title>
-    <!-- Načtení Reactu a knihoven pro grafy -->
+    <!-- Načtení Reactu, Recharts a PapaParse pro čtení CSV -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
     <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         body { margin: 0; background-color: #0f172a; color: white; font-family: system-ui, sans-serif; }
-        .upload-btn { background: #3b82f6; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .upload-btn { background: #3b82f6; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .upload-btn:hover { background: #2563eb; }
         input[type="file"] { display: none; }
     </style>
@@ -21,11 +22,11 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useMemo } = React;
         const { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } = window.Recharts;
 
         const AlocanoDashboard = () => {
-            // Výchozí data (Lze později plně nahradit importem z XTB)
+            // Výchozí data (vaše aktuální portfolio)
             const [portfolioData, setPortfolioData] = useState([
                 { ticker: 'BKNG', sektor: 'Cestování', hodnota: 30064, vaha: 23.5 },
                 { ticker: 'NVDA', sektor: 'Technologie / AI', hodnota: 20000, vaha: 15.6 },
@@ -36,14 +37,157 @@
 
             const [celkovaHodnota, setCelkovaHodnota] = useState(127801.52);
 
-            // Data pro koláčový graf
-            const chartData = [
-                { name: 'Cestování', value: 30064, color: '#3b82f6' },
-                { name: 'Tech / AI', value: 32863, color: '#10b981' }, // NVDA + META
-                { name: 'Spotřeba', value: 22552, color: '#f59e0b' },
-                { name: 'Průmysl', value: 20000, color: '#ef4444' }
-            ];
+            // Automatické generování dat pro koláčový graf podle nahraných pozic
+            const chartData = useMemo(() => {
+                const sektorMap = {};
+                portfolioData.forEach(item => {
+                    const s = item.sektor || 'Ostatní';
+                    sektorMap[s] = (sektorMap[s] || 0) + item.hodnota;
+                });
+                
+                const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+                return Object.keys(sektorMap).map((sektor, index) => ({
+                    name: sektor,
+                    value: Math.round(sektorMap[sektor]),
+                    color: colors[index % colors.length]
+                })).sort((a, b) => b.value - a.value); // Seřadit od největšího
+            }, [portfolioData]);
 
-            // Funkce pro nahrání XTB reportu
+            // Funkce pro nahrání a přečtení XTB reportu (.csv)
             const handleFileUpload = (event) => {
-                const file
+                const file = event.target.files[0];
+                if (!file) return;
+
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        const rawData = results.data;
+                        let newData = [];
+                        let total = 0;
+
+                        rawData.forEach(row => {
+                            // Hledání správných sloupců z XTB exportu (český nebo anglický)
+                            const tickerRaw = row['Symbol'] || row['Ticker'] || row['Instrument'];
+                            const hodnotaRaw = row['Hodnota'] || row['Net Value'] || row['Market value'];
+
+                            if (tickerRaw && hodnotaRaw) {
+                                // Očištění tickeru (odstranění přípony burzy, např. NVDA.US -> NVDA)
+                                const ticker = tickerRaw.split('.')[0];
+                                
+                                // Očištění čísla (odstranění mezer a převod čárky na tečku)
+                                const cleanHodnota = hodnotaRaw.toString().replace(/ /g, '').replace(/,/g, '.');
+                                const hodnota = parseFloat(cleanHodnota);
+
+                                if (hodnota > 0) {
+                                    newData.push({
+                                        ticker: ticker,
+                                        sektor: 'Importováno z XTB', // Pro přesné sektory by bylo třeba napojit API
+                                        hodnota: hodnota,
+                                        vaha: 0 // Vypočítáme v dalším kroku
+                                    });
+                                    total += hodnota;
+                                }
+                            }
+                        });
+
+                        // Výpočet procentuální váhy pro každou pozici
+                        if (newData.length > 0) {
+                            newData = newData.map(item => ({
+                                ...item,
+                                vaha: parseFloat(((item.hodnota / total) * 100).toFixed(1))
+                            }));
+
+                            // Seřazení pozic podle velikosti
+                            newData.sort((a, b) => b.hodnota - a.hodnota);
+
+                            setPortfolioData(newData);
+                            setCelkovaHodnota(total);
+                        } else {
+                            alert("V CSV souboru se nepodařilo najít sloupce 'Symbol' a 'Hodnota'. Zkontrolujte formát exportu z XTB.");
+                        }
+                    }
+                });
+            };
+
+            return (
+                <div style={{ padding: '24px', minHeight: '100vh', maxWidth: '1200px', margin: '0 auto' }}>
+                    
+                    {/* Hlavička a Upload */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '16px', marginBottom: '24px' }}>
+                        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Portfolio Tomáš (Interaktivní)</h1>
+                        <label className="upload-btn">
+                            Nahrát XTB Report (.csv)
+                            <input type="file" accept=".csv" onChange={handleFileUpload} />
+                        </label>
+                    </div>
+
+                    {/* Metriky */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+                        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155' }}>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Celková hodnota</div>
+                            <div style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0' }}>{celkovaHodnota.toLocaleString('cs-CZ')} Kč</div>
+                            <div style={{ fontSize: '14px', color: '#10b981' }}>▲ Live aktualizace zapnuta</div>
+                        </div>
+
+                        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155' }}>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Počet aktivních pozic</div>
+                            <div style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0', color: '#60a5fa' }}>{portfolioData.length}</div>
+                            <div style={{ fontSize: '14px', color: '#94a3b8' }}>Dle posledního importu</div>
+                        </div>
+                    </div>
+
+                    {/* Graf a Tabulka v mřížce */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                        
+                        {/* Koláčový graf */}
+                        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155', height: '400px' }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '16px' }}>Alokace podle sektorů</div>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={chartData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value">
+                                        {chartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={(value) => `${value.toLocaleString('cs-CZ')} Kč`} />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        {/* Tabulka */}
+                        <div style={{ backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155', overflow: 'hidden' }}>
+                            <div style={{ padding: '16px', borderBottom: '1px solid #334155', fontWeight: 'bold' }}>Detaily pozic</div>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                <thead>
+                                    <tr style={{ color: '#94a3b8', fontSize: '12px', borderBottom: '1px solid #334155' }}>
+                                        <th style={{ padding: '12px 16px' }}>Ticker</th>
+                                        <th style={{ padding: '12px 16px' }}>Sektor</th>
+                                        <th style={{ padding: '12px 16px' }}>Hodnota</th>
+                                        <th style={{ padding: '12px 16px' }}>Váha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {portfolioData.map((item, index) => (
+                                        <tr key={index} style={{ borderBottom: '1px solid #334155' }}>
+                                            <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>{item.ticker}</td>
+                                            <td style={{ padding: '12px 16px', color: '#94a3b8' }}>{item.sektor}</td>
+                                            <td style={{ padding: '12px 16px' }}>{item.hodnota.toLocaleString('cs-CZ')} Kč</td>
+                                            <td style={{ padding: '12px 16px' }}>{item.vaha} %</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AlocanoDashboard />);
+    </script>
+</body>
+</html>
