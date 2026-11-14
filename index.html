@@ -1,80 +1,98 @@
-import React from 'react';
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Dashboard</title>
+    <!-- Načtení Reactu přímo do prohlížeče -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #0f172a; color: white; font-family: system-ui, sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-const AlocanoDashboard = () => {
-  return (
-    <div style={{ backgroundColor: '#0f172a', color: 'white', padding: '24px', fontFamily: 'system-ui, sans-serif', minHeight: '100vh' }}>
-      
-      {/* Hlavička */}
-      <div style={{ borderBottom: '1px solid #1e293b', paddingBottom: '16px', marginBottom: '24px' }}>
-        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Portfolio Tomáš (Nová Strategie)</h1>
-      </div>
+    <script type="text/babel">
+        const AlocanoDashboard = () => {
+            return (
+                <div style={{ padding: '24px', minHeight: '100vh' }}>
+                    
+                    {/* Hlavička */}
+                    <div style={{ borderBottom: '1px solid #1e293b', paddingBottom: '16px', marginBottom: '24px' }}>
+                        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>Portfolio Tomáš (Nová Strategie)</h1>
+                    </div>
 
-      {/* Metriky */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-        
-        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155' }}>
-          <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Celková hodnota po nákupech</div>
-          <div style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0' }}>127 801,52 Kč</div>
-          <div style={{ fontSize: '14px', color: '#10b981' }}>▲ Očekávaný růst volatility</div>
-        </div>
+                    {/* Metriky */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+                        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155' }}>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Celková hodnota po nákupech</div>
+                            <div style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0' }}>127 801,52 Kč</div>
+                            <div style={{ fontSize: '14px', color: '#10b981' }}>▲ Očekávaný růst volatility</div>
+                        </div>
 
-        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155' }}>
-          <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Největší riziko (Max Drawdown)</div>
-          <div style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0', color: '#ef4444' }}>- 21,5 %</div>
-          <div style={{ fontSize: '14px', color: '#94a3b8' }}>Daň za Nvidii a AI sektor</div>
-        </div>
+                        <div style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '8px', border: '1px solid #334155' }}>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>Největší riziko (Max Drawdown)</div>
+                            <div style={{ fontSize: '28px', fontWeight: 'bold', margin: '8px 0', color: '#ef4444' }}>- 21,5 %</div>
+                            <div style={{ fontSize: '14px', color: '#94a3b8' }}>Daň za Nvidii a AI sektor</div>
+                        </div>
+                    </div>
 
-      </div>
+                    {/* Tabulka pozic */}
+                    <div style={{ backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155', overflow: 'hidden' }}>
+                        <div style={{ padding: '16px', borderBottom: '1px solid #334155', fontWeight: 'bold' }}>Plánovaná alokace (14 pozic)</div>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ color: '#94a3b8', fontSize: '12px', borderBottom: '1px solid #334155' }}>
+                                    <th style={{ padding: '12px 16px' }}>Ticker</th>
+                                    <th style={{ padding: '12px 16px' }}>Sektor</th>
+                                    <th style={{ padding: '12px 16px' }}>Hodnota</th>
+                                    <th style={{ padding: '12px 16px' }}>Váha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style={{ borderBottom: '1px solid #334155' }}>
+                                    <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>BKNG</td>
+                                    <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Cestování</td>
+                                    <td style={{ padding: '12px 16px' }}>30 064 Kč</td>
+                                    <td style={{ padding: '12px 16px' }}>23,5 %</td>
+                                </tr>
+                                <tr style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderBottom: '1px solid #334155' }}>
+                                    <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#60a5fa' }}>NVDA (Nový)</td>
+                                    <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Technologie / AI</td>
+                                    <td style={{ padding: '12px 16px' }}>20 000 Kč</td>
+                                    <td style={{ padding: '12px 16px' }}>15,6 %</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid #334155' }}>
+                                    <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>MCD</td>
+                                    <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Spotřeba</td>
+                                    <td style={{ padding: '12px 16px' }}>22 552 Kč</td>
+                                    <td style={{ padding: '12px 16px' }}>17,6 %</td>
+                                </tr>
+                                <tr style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderBottom: '1px solid #334155' }}>
+                                    <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#60a5fa' }}>RHM (Za měsíc)</td>
+                                    <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Průmysl / Obrana</td>
+                                    <td style={{ padding: '12px 16px' }}>20 000 Kč</td>
+                                    <td style={{ padding: '12px 16px' }}>15,6 %</td>
+                                </tr>
+                                <tr>
+                                    <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>META</td>
+                                    <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Technologie</td>
+                                    <td style={{ padding: '12px 16px' }}>12 863 Kč</td>
+                                    <td style={{ padding: '12px 16px' }}>10,1 %</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
 
-      {/* Tabulka pozic */}
-      <div style={{ backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155', overflow: 'hidden' }}>
-        <div style={{ padding: '16px', borderBottom: '1px solid #334155', fontWeight: 'bold' }}>Plánovaná alokace (14 pozic)</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ color: '#94a3b8', fontSize: '12px', borderBottom: '1px solid #334155' }}>
-              <th style={{ padding: '12px 16px' }}>Ticker</th>
-              <th style={{ padding: '12px 16px' }}>Sektor</th>
-              <th style={{ padding: '12px 16px' }}>Hodnota</th>
-              <th style={{ padding: '12px 16px' }}>Váha</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style={{ borderBottom: '1px solid #334155' }}>
-              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>BKNG</td>
-              <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Cestování</td>
-              <td style={{ padding: '12px 16px' }}>30 064 Kč</td>
-              <td style={{ padding: '12px 16px' }}>23,5 %</td>
-            </tr>
-            <tr style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderBottom: '1px solid #334155' }}>
-              <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#60a5fa' }}>NVDA (Nový)</td>
-              <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Technologie / AI</td>
-              <td style={{ padding: '12px 16px' }}>20 000 Kč</td>
-              <td style={{ padding: '12px 16px' }}>15,6 %</td>
-            </tr>
-            <tr style={{ borderBottom: '1px solid #334155' }}>
-              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>MCD</td>
-              <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Spotřeba</td>
-              <td style={{ padding: '12px 16px' }}>22 552 Kč</td>
-              <td style={{ padding: '12px 16px' }}>17,6 %</td>
-            </tr>
-            <tr style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderBottom: '1px solid #334155' }}>
-              <td style={{ padding: '12px 16px', fontWeight: 'bold', color: '#60a5fa' }}>RHM (Za měsíc)</td>
-              <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Průmysl / Obrana</td>
-              <td style={{ padding: '12px 16px' }}>20 000 Kč</td>
-              <td style={{ padding: '12px 16px' }}>15,6 %</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '12px 16px', fontWeight: 'bold' }}>META</td>
-              <td style={{ padding: '12px 16px', color: '#94a3b8' }}>Technologie</td>
-              <td style={{ padding: '12px 16px' }}>12 863 Kč</td>
-              <td style={{ padding: '12px 16px' }}>10,1 %</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-  );
-};
-
-export default AlocanoDashboard;
+        // Vykreslení
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AlocanoDashboard />);
+    </script>
+</body>
+</html>
